@@ -12,11 +12,20 @@ use App\Mail\QueueInformation;
 class QRequestController extends Controller
 {
     private const API_KEY = 'klenthadechristian';
+    private string $apiBaseUrl;
+
+    public function __construct()
+    {
+        $this->apiBaseUrl = env('LINE_MANAGER_API_URL');
+    }
 
     // Show the web form
     public function main()
     {
-        return view('QRequest.main');
+        // Pass the API URL to the view
+        return view('QRequest.main', [
+            'apiBaseUrl' => $this->apiBaseUrl
+        ]);
     }
 
     public function insert(Request $request)
@@ -64,7 +73,7 @@ class QRequestController extends Controller
         // Send request to your system's API
         $response = \Illuminate\Support\Facades\Http::withHeaders([
             'x-api-key' => env('line-manager-api-key'), 
-        ])->post('http://172.20.10.6/line-manager/line-manager/public/api/queue/register', [
+        ])->post($this->apiBaseUrl . '/queue/register', [
             'name' => $validated['name'],
             'student_id' => $validated['student_id'],
             'purpose' => $validated['purpose'],
@@ -121,4 +130,42 @@ class QRequestController extends Controller
             return response()->json(['error' => 'Failed to send email'], 500);
         }
     }
+
+    public function cancelQueue(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'queue_number' => 'required|string|max:255',
+            ]);
+
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'x-api-key' => env('line-manager-api-key'),
+            ])->post($this->apiBaseUrl . '/queue/cancel', [
+                'name' => $validated['name'],
+                'queue_number' => $validated['queue_number'],
+            ]);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Queue canceled successfully',
+                    'data' => $response->json(),
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to cancel queue',
+                    'details' => $response->json(),
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Queue cancelation failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred during cancelation',
+            ], 500);
+        }
+    }
+
 }

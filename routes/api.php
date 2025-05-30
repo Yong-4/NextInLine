@@ -13,3 +13,5 @@ Route::post('/queue/register', [QRequestController::class, 'apiStore'])
     ->name('QRequest.apiStore');
 Route::get('/current-serving', [QRequestController::class, 'showCurrentServingQueue']);
 Route::post('/send-queue-email', [QRequestController::class, 'sendQueueEmail']);
+Route::post('/queue/cancel', [QRequestController::class, 'cancelQueue']);
+

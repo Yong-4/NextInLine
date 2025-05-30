@@ -1,5 +1,6 @@
 let lastQueueData = null;
 const viewLastQueueBtn = document.getElementById('viewLastQueue');
+const apiBaseUrl = document.querySelector('meta[name="api-base-url"]').content;
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loading-popup').style.display = 'flex';
         
         const form = document.querySelector('form');
-        const apiUrl = 'http://172.20.10.6/line-manager/line-manager/public/api/queue/register';
+        const apiUrl = apiBaseUrl + '/queue/register';
         
         try {
             const formDataObject = {
@@ -253,6 +254,85 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('close-success-popup').addEventListener('click', function() {
         document.getElementById('success-popup').style.display = 'none';
     });
+
+    // Cancel Queue Popup Handlers
+    const cancelQueueBtn = document.getElementById('cancelQueueBtn');
+    const cancelPopup = document.getElementById('cancel-popup');
+    const closeCancelBtn = document.getElementById('cancel-close-btn');
+    const closeCancelPopupBtn = document.getElementById('close-cancel-popup');
+    const cancelQueueForm = document.getElementById('cancelQueueForm');
+
+    // Function to close cancel popup and reset form
+    function closeCancelPopupAndReset() {
+        cancelPopup.style.display = 'none';
+        cancelQueueForm.reset();
+    }
+
+    cancelQueueBtn.addEventListener('click', function() {
+        cancelPopup.style.display = 'block';
+    });
+
+    closeCancelBtn.addEventListener('click', function() {
+        closeCancelPopupAndReset();
+    });
+
+    closeCancelPopupBtn.addEventListener('click', function() {
+        closeCancelPopupAndReset();
+    });
+
+    // Close cancel popup after successful submission
+    cancelQueueForm?.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById('cancel-name').value.trim();
+        const queueNumber = document.getElementById('cancel-queue-number').value.trim();
+
+        if (!name || !queueNumber) {
+            alert('Please fill in both fields.');
+            return;
+        }
+
+        // Show confirmation popup instead of browser confirm
+        document.getElementById('cancel-confirm-popup').style.display = 'block';
+    });
+
+    // Handle confirmation popup buttons
+    document.getElementById('confirm-cancel')?.addEventListener('click', async function() {
+        const name = document.getElementById('cancel-name').value.trim();
+        const queueNumber = document.getElementById('cancel-queue-number').value.trim();
+
+        try {
+            const response = await fetch(apiBaseUrl + '/queue/cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-API-Key': 'klenthadechristian'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    queue_number: queueNumber
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert("Queue canceled successfully.");
+                closeCancelPopupAndReset();
+                document.getElementById('cancel-confirm-popup').style.display = 'none';
+            } else {
+                alert(result.message || 'Failed to cancel the queue.');
+            }
+        } catch (error) {
+            console.error('Error canceling queue:', error);
+            alert("An error occurred while canceling the queue.");
+        }
+    });
+
+    document.getElementById('deny-cancel')?.addEventListener('click', function() {
+        document.getElementById('cancel-confirm-popup').style.display = 'none';
+    });
 });
 
 function showPopupWithData(data) {
@@ -326,7 +406,7 @@ function showConfirmPopup(data) {
 
 async function updateCurrentQueueNumber() {
     try {
-        const response = await fetch('http://172.20.10.6/line-manager/line-manager/public/api/queue/current-serving');
+        const response = await fetch(apiBaseUrl + '/queue/current-serving');
         const data = await response.json();
         if (response.ok && data.current_queue_number !== undefined) {
             document.querySelector('.queue-number').textContent = data.current_queue_number.toString().padStart(2, '0');

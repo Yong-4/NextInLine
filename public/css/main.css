@@ -393,3 +393,13 @@ input, select {
     background-color: var(--form-background) !important;
     color: var(--text-color) !important;
 }
+
+.cancel-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 2px solid var(--primary-color);
+}
+
+.cancel-section h2 {
+  color: var(--primary-color);
+}

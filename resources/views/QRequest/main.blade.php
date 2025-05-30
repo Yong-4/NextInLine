@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('css/popup.css') }}">
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="api-base-url" content="{{ $apiBaseUrl }}">
 </head>
 <body>
   <header>
@@ -16,6 +17,9 @@
     <div class="header-buttons">
       <button class="btn-entry" id="viewLastQueue">
           <span><i class='bx bx-show'></i></span> View Information
+      </button>
+      <button class="btn-entry" id="cancelQueueBtn">
+          <span><i class='bx bx-x-circle'></i></span> Cancel Queue
       </button>
       <button class="btn-theme" id="themeToggle">
           <i class='bx bx-moon'></i>
@@ -119,6 +123,43 @@
       </div>
       <div class="button-container">
         <button id="close-success-popup" class="submit-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="cancel-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+      <h2>Cancel Queue Request</h2>
+      <form id="cancelQueueForm" method="post">
+        <div class="info-container">
+          <div class="form-group">
+            <label for="cancel-name">Name</label>
+            <input type="text" id="cancel-name" name="name" autocomplete="off" required>
+          </div>
+
+          <div class="form-group">
+            <label for="cancel-queue-number">Queue Number</label>
+            <input type="text" id="cancel-queue-number" name="queue_number" autocomplete="off" required>
+          </div>
+        </div>
+        <div class="button-container">
+          <button type="submit" class="submit-btn" style="background-color: #ff4444;">Cancel My Queue</button>
+          <button type="button" id="close-cancel-popup" class="submit-btn">Close</button>
+        </div>
+      </form>
+      <button class="close-btn" id="cancel-close-btn">&times;</button>
+    </div>
+  </div>
+
+  <div id="cancel-confirm-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+      <h2>Confirm Cancellation</h2>
+      <div class="info-container">
+        <p>Are you sure you want to cancel your queue request?</p>
+      </div>
+      <div class="button-container">
+        <button id="confirm-cancel" class="submit-btn" style="background-color: #ff4444;">Yes, Cancel Queue</button>
+        <button id="deny-cancel" class="submit-btn">No, Keep Queue</button>
       </div>
     </div>
   </div>
